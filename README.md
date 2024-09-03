@@ -1,6 +1,6 @@
 === Simple Newsletter Sign-Up with Hero Section ===
-Contributors: yourusername
-Donate link: https://yourwebsite.com/donate
+Contributors: steven lawton
+Donate link: https://stevenlawton.com/donate
 Tags: newsletter, sign-up, email, subscription, Gutenberg, hero section, GDPR
 Requires at least: 5.0
 Tested up to: 6.0
