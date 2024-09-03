@@ -1,4 +1,5 @@
 === Simple Newsletter Sign-Up with Hero Section ===
+
 Contributors: steven lawton
 Donate link: https://stevenlawton.com/donate
 Tags: newsletter, sign-up, email, subscription, Gutenberg, hero section, GDPR
@@ -37,13 +38,13 @@ This plugin is perfect for authors, bloggers, and marketers who want to increase
 
 == Frequently Asked Questions ==
 
-= How do I change the background image for the hero section? =
+=How do I change the background image for the hero section?=
 You can change the background image by editing the block settings directly in the Gutenberg editor. Select the "Newsletter Hero Section" block, and then upload a new image or choose one from your media library.
 
-= Can I customize the text and button colors? =
+=Can I customize the text and button colors?=
 Yes, you can customize the text and button colors within the block settings. The block includes color pickers for easy customization.
 
-= Is the plugin GDPR compliant? =
+=Is the plugin GDPR compliant?=
 The plugin includes an optional checkbox that users must check to agree to receive emails, helping you comply with GDPR and other email marketing laws.
 
 = Does the plugin protect against spam? =
