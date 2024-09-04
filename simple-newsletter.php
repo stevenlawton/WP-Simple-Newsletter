@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Include the reCAPTCHA configuration
-require_once(plugin_dir_path(__FILE__) . 'recaptcha-config.php');
+require_once(plugin_dir_path(__FILE__) . 'config.php');
 require_once(plugin_dir_path(__FILE__) . 'hero-section-signup.php');
 
 // Function to create the database table on plugin activation
@@ -168,6 +168,7 @@ function snl_signup_form() {
 
     // Create the initial button
     $content .= '<div id="snl-signup-button">Sign Up to Newsletter</div>';
+    $recaptcha_site_key = get_option('snl_recaptcha_site_key');
 
     // Create the popover with the form
     $content .= '<div id="snl-popover">
@@ -191,7 +192,7 @@ function snl_signup_form() {
                             <label for="snl-consent">I agree to receive updates about books, projects, courses, and other news. I understand I can unsubscribe at any time.</label>
                         </p>
                         <button class="g-recaptcha" 
-                                data-sitekey="' . RECAPTCHA_SITE_KEY . '" 
+                                data-sitekey="' . esc_attr($recaptcha_site_key) . '" 
                                 data-callback="onSubmit" 
                                 data-action="submit">Sign Up to Newsletter</button>';
     // Add the nonce field
@@ -205,6 +206,7 @@ function snl_signup_form() {
 
 
 
+// Function to handle form submission and send verification email
 function snl_handle_form() {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['g-recaptcha-response']) && isset($_POST['snl_nonce'])) {
 
@@ -214,19 +216,21 @@ function snl_handle_form() {
             return;
         }
 
-        // Verify the reCAPTCHA v3 response
+        // In your form processing function, use the stored keys instead of hard-coded values
         $recaptcha_response = sanitize_text_field($_POST['g-recaptcha-response']);
+        $recaptcha_secret_key = get_option('snl_recaptcha_secret_key'); // Retrieve from settings
 
         $response = wp_remote_post(
             'https://www.google.com/recaptcha/api/siteverify',
             array(
                 'body' => array(
-                    'secret' => RECAPTCHA_SECRET_KEY,
+                    'secret' => $recaptcha_secret_key,
                     'response' => $recaptcha_response,
                     'remoteip' => $_SERVER['REMOTE_ADDR']
                 )
             )
         );
+
 
         $response_body = wp_remote_retrieve_body($response);
         $result = json_decode($response_body);
@@ -238,11 +242,19 @@ function snl_handle_form() {
 
         $email = sanitize_email($_POST['snl-email']);
 
-        // Generate a unique verification token
-        $token = md5(uniqid($email, true));
-
+        // Check if the email already exists in the database
         global $wpdb;
         $table_name = $wpdb->prefix . 'snl_emails';
+
+        $existing_email = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $table_name WHERE email = %s", $email));
+
+        if ($existing_email > 0) {
+            echo '<div>You have already signed up with this email address.</div>';
+            return; // Stop further processing
+        }
+
+        // Generate a unique verification token
+        $token = md5(uniqid($email, true));
 
         // Insert the email and token into the database
         $wpdb->insert(
@@ -272,6 +284,7 @@ function snl_handle_form() {
         }
     }
 }
+
 
 
 
@@ -353,17 +366,33 @@ function snl_register_menu_page()
 add_action('admin_menu', 'snl_register_menu_page');
 
 // Function to display collected emails in the admin dashboard
-function snl_display_signups_page()
-{
+// Function to display collected emails in the admin dashboard with a Remove button
+function snl_display_signups_page() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'snl_emails';
 
+    // Check if a "remove" action has been triggered
+    if (isset($_GET['remove']) && is_numeric($_GET['remove'])) {
+        $email_id = intval($_GET['remove']);
+
+        // Delete the entry from the database
+        $deleted = $wpdb->delete($table_name, array('id' => $email_id), array('%d'));
+
+        // Provide feedback
+        if ($deleted) {
+            echo '<div class="updated notice"><p>Email removed successfully.</p></div>';
+        } else {
+            echo '<div class="error notice"><p>Failed to remove email. Please try again.</p></div>';
+        }
+    }
+
+    // Fetch all email sign-ups
     $results = $wpdb->get_results("SELECT * FROM $table_name");
 
     echo '<div class="wrap">';
     echo '<h1>Newsletter Sign-Ups</h1>';
     echo '<table class="widefat fixed" cellspacing="0">';
-    echo '<thead><tr><th>ID</th><th>Email</th><th>Date Subscribed</th><th>Verified</th></tr></thead>';
+    echo '<thead><tr><th>ID</th><th>Email</th><th>Date Subscribed</th><th>Verified</th><th>Action</th></tr></thead>';
     echo '<tbody>';
 
     if ($results) {
@@ -373,10 +402,13 @@ function snl_display_signups_page()
             echo '<td>' . esc_html($row->email) . '</td>';
             echo '<td>' . esc_html($row->date_subscribed) . '</td>';
             echo '<td>' . ($row->is_verified ? 'Yes' : 'No') . '</td>';
+            echo '<td>';
+            echo '<a href="' . esc_url(add_query_arg(array('remove' => $row->id))) . '" class="button button-danger" onclick="return confirm(\'Are you sure you want to remove this email?\');">Remove</a>';
+            echo '</td>';
             echo '</tr>';
         }
     } else {
-        echo '<tr><td colspan="4">No sign-ups found.</td></tr>';
+        echo '<tr><td colspan="5">No sign-ups found.</td></tr>';
     }
 
     echo '</tbody>';

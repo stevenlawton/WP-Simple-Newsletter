@@ -1,14 +1,16 @@
 <?php
 // Function to display the hero section sign-up form
-// Define the background image constant
-define('SNL_HERO_BACKGROUND', '/wp-content/uploads/2019/10/dnh30-222.jpg');
+require_once(plugin_dir_path(__FILE__) . 'config.php');
 
 // Function to display the hero section sign-up form
 function snl_hero_signup_form() {
     // Add custom CSS for the hero section
+    $snl_hero_background_path = get_option('snl_hero_background_path'); // Retrieve from settings
+
+
     $content = '<style>
         #snl-hero {
-            background: url("' . SNL_HERO_BACKGROUND . '") no-repeat center center;
+            background: url("' . esc_attr($snl_hero_background_path) . '") no-repeat center center;
             background-size: cover;
             padding: 100px 20px;
             color: #fff;
@@ -95,6 +97,9 @@ function snl_hero_signup_form() {
         }
     </style>';
 
+    $recaptcha_site_key = get_option('snl_recaptcha_site_key'); // Retrieve from settings
+
+
     // Create the hero section with the form
     $content .= '<div id="snl-hero">
                     <div id="snl-hero-overlay"></div>
@@ -105,7 +110,7 @@ function snl_hero_signup_form() {
                         <form id="snl-hero-form" method="post" action="' . esc_url($_SERVER['REQUEST_URI']) . '">
                             <input type="email" name="snl-email" id="snl-email" placeholder="Your Email Address" required />
                             <button class="g-recaptcha" 
-                                    data-sitekey="' . RECAPTCHA_SITE_KEY . '" 
+                                    data-sitekey="' . esc_attr($recaptcha_site_key) . '" 
                                     data-callback="onSubmit" 
                                     data-action="submit">Subscribe Now</button>';
     // Add the nonce field
