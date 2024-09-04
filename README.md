@@ -1,13 +1,21 @@
 # Simple Newsletter Sign-Up with Hero Section 
 
 Contributors: steven lawton
+
 Donate link: https://stevenlawton.com/donate
+
 Tags: newsletter, sign-up, email, subscription, Gutenberg, hero section, GDPR
+
 Requires at least: 5.0
+
 Tested up to: 6.0
+
 Requires PHP: 7.0
+
 Stable tag: 1.0
+
 License: GPLv2 or later
+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 A simple and elegant plugin to create a newsletter sign-up hero section with reCAPTCHA v3 integration, designed for use with the Gutenberg block editor.
